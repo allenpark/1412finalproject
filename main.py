@@ -1,6 +1,6 @@
-from sweep import Sweep
-from sweepPlayer import SweepPlayer
+from pairs import Pairs
+from pairsPlayer import PairsPlayer
 from randomPlayer import RandomPlayer
 
-sweep = Sweep()
-sweep.play([RandomPlayer, SweepPlayer])
+pairs = Pairs()
+pairs.play([RandomPlayer, PairsPlayer])

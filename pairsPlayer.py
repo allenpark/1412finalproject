@@ -1,4 +1,4 @@
-class SweepPlayer:
+class PairsPlayer:
     def __init__(self, pid, hand):
         self.type = "Default Player"
         self.pid = pid

@@ -1,6 +1,6 @@
 import random
 
-class Sweep:
+class Pairs:
     def __init__(self, dbg=True):
         self.debug = dbg
 

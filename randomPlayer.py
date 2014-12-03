@@ -1,6 +1,6 @@
 import random
-from sweepPlayer import SweepPlayer
+from pairsPlayer import PairsPlayer
 
-class RandomPlayer(SweepPlayer):
+class RandomPlayer(PairsPlayer):
     def decide(self, center, players, played, round_num):
         return random.choice(self.hand)
