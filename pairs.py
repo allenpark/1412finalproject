@@ -1,110 +1,130 @@
 import random
 
 class Pairs:
-    def __init__(self, dbg=True):
-        self.debug = dbg
+    def __init__(self, debug=True):
+        self.debug = debug
 
-    def debug(self, msg):
+    def dbg(self, msg):
         if self.debug:
             print msg
 
     def init_game(self, clses):
+        # initialising the deck
         self.deck = []
         for i in xrange(1, 11):
             self.deck += [i]*i
         random.shuffle(self.deck)
+        # burning 5 cards
+        self.discards = self.pop_from_deck(5)
+        # initialising players
         self.players = []
         for i in xrange(len(clses)):
-            cls = clses[i]
-            hand = self.pop_from_deck(5)
-            self.players.append(cls(i, hand))
-        return True
+            self.players.append(clses[i](i))
+        return self.init_round()
+
+    def init_round(self):
+        self.dbg("")
+        # discarding all cards in play
+        for i in xrange(len(self.players)):
+            p = self.players[i]
+            self.discards += p.hand
+            self.players[i].hand = []
+            self.dbg("Player " + str(i) + " score: " + str(p.score) + " and scored: " + str(p.scored))
+        self.dbg("")
+        # dealing initial hand
+        lowest = []
+        lowest_card = 11
+        for i in xrange(len(self.players)):
+            hand = self.pop_from_deck(1)
+            self.players[i].insert_into_hand(hand)
+            if hand[0] < lowest_card:
+                lowest = [i]
+                lowest_card = hand[0]
+            elif hand[0] == lowest_card:
+                lowest.append(i)
+            self.dbg("Player " + str(i) + " is dealt " + str(hand[0]))
+        # determining first player
+        self.dbg("Lowest is players " + str(lowest) + " with card " + str(lowest_card))
+        while len(lowest) > 1:
+            lowest_again = []
+            lowest_card_again = 11
+            for i in lowest:
+                another = self.pop_from_deck(1)
+                self.dbg("Player " + str(i) + " is dealt " + str(another[0]))
+                while another[0] in self.players[i].hand:
+                    self.dbg("This is a duplicate! Discarded.")
+                    self.discards.append(another[0]);
+                    another = self.pop_from_deck(1)
+                    self.dbg("Player " + str(i) + " is dealt " + str(another[0]))
+                self.players[i].insert_into_hand(another)
+                if another[0] < lowest_card_again:
+                    lowest_again = [i]
+                    lowest_card_again = another[0]
+                elif another[0] == lowest_card_again:
+                    lowest_again.append(i)
+            lowest = lowest_again
+            self.dbg("Lowest is players " + str(lowest) + " with card " + str(lowest_card_again))
+        self.dbg("Player " + str(lowest[0]) + " goes first.")
+        return lowest[0]
 
     def pop_from_deck(self, n):
-        if n >= len(self.deck):
-            x = self.deck
-            self.deck = []
-            return x
         r = []
         for i in xrange(n):
+            if len(self.deck) == 0:
+                self.dbg("Reshuffling!")
+                self.deck = self.discards
+                random.shuffle(self.deck)
+                self.discards = self.pop_from_deck(5)
             r.append(self.deck.pop())
         return r
-
-    def take_highest_from_center(self):
-        h = self.center[-1]
-        r = []
-        while len(self.center) > 0 and self.center[-1] == h:
-            r.append(self.center.pop())
-        return r
-
-    def take_lower_from_center(self, card):
-        r = []
-        while len(self.center) > 0 and self.center[0] < card:
-            r.append(self.center.pop(0))
-        return r
-
-    def insert_into_center(self, card):
-        for i in xrange(len(self.center)):
-            if self.center[i] >= card:
-                self.center.insert(i, card)
-                return
-        self.center.append(card)
     
     def play(self, clses, dbg=True):
         self.debug = dbg
-        if not self.init_game(clses):
-            return
-        round_num = 0
-        last_capture = 0
-        while len(self.deck) > 0:
-            self.center = sorted(self.pop_from_deck(5))
-            # playing phase
-            played = []
-            print
-            print "PLAYING:"
-            print "Center is " + str(self.center)
-            for i in xrange(len(self.players)):
-                pid = (i + last_capture) % len(self.players)
-                mv = self.players[pid].move(self.center, self.players, played, round_num)
-                print "Player " + str(pid) + " played " + str(mv)
-                played.append([pid, mv])
-            # capturing phase
-            # TODO: detect and implement ties
-            print
-            print "CAPTURING:"
-            played = sorted(played, key=lambda x: x[1])
-            first_pid = played[0][0]
-            highest = self.take_highest_from_center()
-            print "Player " + str(first_pid) + " played " + str(played[0][1]) + " and took " + str(highest)
-            self.players[first_pid].insert_into_hand(highest)
-            self.insert_into_center(played[0][1])
-            for i in xrange(1, len(played)):
-                pid = played[i][0]
-                lower = self.take_lower_from_center(played[i][1])
-                print "Player " + str(pid) + " played " + str(played[i][1]) + " and took " + str(lower)
-                self.players[pid].insert_into_hand(lower)
-                self.insert_into_center(played[i][1])
-            last_capture = played[-1][0]
-            round_num += 1
-        # scoring phase
-        scores = [0] * len(self.players)
-        for card in xrange(1, 11):
-            most_cards = 1
-            most_players = []
-            for i in xrange(len(self.players)):
-                hand = self.players[i].hand
-                num_cards = 0
-                for j in xrange(len(hand)):
-                    if hand[j] == card:
-                        num_cards += 1
-                if num_cards == most_cards:
-                    most_players.append(i)
-                elif num_cards > most_cards:
-                    most_cards = num_cards
-                    most_players = [i]
-            for i in xrange(len(most_players)):
-                scores[most_players[i]] += card
-        print
-        print "SCORING:"
+        pid = self.init_game(clses)
+        limit = (60 / len(clses)) + 1
+        while True:
+            p = self.players[pid]
+            mv = p.move(self.players)
+            self.dbg("")
+            if mv:
+                # hit
+                deal = self.pop_from_deck(1)[0]
+                if deal in p.hand:
+                    # you got a pair
+                    p.score += deal
+                    p.scored.append(deal)
+                    self.dbg("Player " + str(pid) + " has hit for " + str(deal) + " and got a pair!")
+                    if p.score >= limit:
+                        break
+                    pid = self.init_round()
+                    continue
+                else:
+                    p.insert_into_hand([deal])
+                    self.dbg("Player " + str(pid) + " has hit for " + str(deal) + " and now has " + str(p.hand))
+            else:
+                # fold
+                all_cards = [y for x in self.players for y in x.hand]
+                lowest = min(all_cards)
+                steal_from = p.handle_fold(lowest, self.players)
+                if lowest in self.players[steal_from].hand:
+                    self.players[steal_from].hand.remove(lowest)
+                    p.score += lowest
+                    p.scored.append(lowest)
+                    self.dbg("Player " + str(pid) + " has folded and taken a " + str(lowest) + " from player " + str(steal_from) + "'s hand")
+                    if p.score >= limit:
+                        break
+                    pid = self.init_round()
+                    continue
+                else:
+                    print "------------------------------------------------------------------"
+                    print "ERROR: Lowest " + str(lowest) + " not in player " + str(steal_from) + "'s hand " + str(self.players[steal_from].hand)
+                    print "------------------------------------------------------------------"
+
+            pid = (pid + 1) % len(self.players)
+        self.dbg("")
+        self.dbg("Player " + str(pid) + " has lost!")
+        self.dbg("")
+        self.dbg("Final scores:")
         for i in xrange(len(self.players)):
-            print "Player " + str(i) + " has score " + str(scores[i]) + " and hand " + str(self.players[i].hand)
+            p = self.players[i]
+            self.dbg("Player " + str(i) + " score: " + str(p.score) + " and scored: " + str(p.scored))

@@ -3,4 +3,4 @@ from pairsPlayer import PairsPlayer
 from randomPlayer import RandomPlayer
 
 pairs = Pairs()
-pairs.play([RandomPlayer, PairsPlayer])
+pairs.play([RandomPlayer, RandomPlayer])
