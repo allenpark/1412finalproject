@@ -14,9 +14,33 @@
 
 \section{Introduction}
 
+\indent \indent Pairs is an easy ``press-your-luck'' card game which uses a peculiar triangular deck where the number of cards of a particular rank occurs is equal to the rank of the card.  Players take turns by choosing to ``hit'' or ``fold'' without violating some criteria resembling a structure similar to Black Jack.  For example, in Black Jack, the basic aim is to not yield a sum of cards greater than 21.  In Pairs, the objective is to not yield two cards of the same rank, also known as catching a pair.  Players are penalized for catching pairs.
+
+In this paper, we analyze the game of pairs under general cases.  We consider generalizing the deck (an arbitrary number of ranks and an arbitrary number of cards) and the number of players.  We use a particular zero-sum utility function reflecting the one loser policy of the game where the loser receives a negative utility proportional to the pair scored and all other players receive positive utility proportional to the pair scored.
+
+We derive results and invariants about the game and the moves of particular strategies that will yield Subgame Perfect Nash Equilibria by considering best responses.  With these results, we program computations to solve for the strategies under certain stages of the game.  With this computation, we simulate the results playing against each other under different strategies, such as two SPNE strategies playing against each other and a SPNE player playing against a player who plays randomly.
+
 \section{Background}
 
 \subsection{Description of Pairs}
+
+\textbf{Deck} \indent
+The deck of the card game Pairs consists of a triangular deck.  The deck contains 10 ranks of cards from 1 to 10.  There exists one card with rank 1, two cards with rank 2, 3 cards with rank 3, and so on until there are ten cards of rank 10.  There are no additional features other than the ranks of the cards.  Hence, the deck consists of 55 cards. \\
+\textbf{Set-Up} \indent
+The deck is shuffled and five cards are \emph{burned} and discarded, facedown, into the middle of the table.  This begins the separate discard pile.  Each time the deck is reshuffled from the discard pile, another set of five cards will be burned again to prevent players from counting cards. \\
+At the beginning of a round, one card is dealt faceup to each player.  The player with the lowest card will go first.  To break ties for low, if two or more players are tied for low, additional cards are dealt to the tied players and those cards as used as tiebreakers.  If the tiebreakers are tied, more cards are continued to be dealt until there is one unique player with the lowest card.  If someone gets  a pair during the tiebreaking process, the dealt paired card is discarded and another card is dealt as a replacement.  A player is not penalized by a pair on the deal for the set-up, but players may wind up with several extra cards. \\
+\textbf{Turn} \indent
+On a player's turn, the player has two choices.  The player may \textbf{hit} (take a card) or \textbf{fold}.  If a player receives a pair of cards (two cards of the same rank), or folds, the round is over and the player scores points.  Otherwise, play passes to the left. \\
+\textbf{Pairing Up} \indent
+When a player hits as his or her move, the player aims not to get a pair (any two cards of the same rank).  If the player pairs up, then the player scores the number of points of the denomination of the pair.  One card of the pair is kept to the side, faceup, to maintain score.  For example, if a player catches a pair of 8's, the player scores 8 points, and sets aside one of the eights to keep score. \\
+\textbf{Folding} \indent
+A player can fold or surrender as his or her move.  Instead of taking a card, the player takes the \emph{lowest faceup card in play} on the table (cards set aside to count for score are not included).  The taken faceup card is kept aside to maintain points.  This card may be chosen from any player's stack, not just his or her own.  Folding may sometimes be better than hitting, based on the probability of catching a pair. \\
+\textbf{Ending the Round} \indent
+As soon as one player catches a pair or folds, the round is over.  All the cards in play are discarded, facedown into the middle of the table, and another round is dealt.  The players keep the scoring cards aside, faceup to maintain points and will not return to the deck until the game is over. \\
+\textbf{Reshuffling} \indent
+When the deck runs out, discard pile is reshuffled and used as the deck.  Five cards are burned again to make counting cards a bit more difficult.  If there are fewer than five cards after the burned cards, do not burn any cards and continue play.  \\
+\textbf{Losing the Game} \indent
+In the traditional game, there is no winner, just one loser.  The game ends when one player reaches the target score.  For example in a 4-player game, the loser is the first person to score 16 points.  The target score is given by the formula $\lfloor \frac{60}{m} \rfloor + 1$ where $m$ is the number of players in the game.
 
 \subsection{Definitions}
 
