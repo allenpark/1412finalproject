@@ -11,11 +11,12 @@ class Pairs:
     def init_game(self, clses):
         # initialising the deck
         self.deck = []
+        self.deckCount = []
         for i in xrange(1, 11):
             self.deck += [i]*i
+            self.deckCount.append(i)
         random.shuffle(self.deck)
-        # burning 5 cards
-        self.discards = self.pop_from_deck(5)
+        self.discards = []
         # initialising players
         self.players = []
         for i in xrange(len(clses)):
@@ -51,7 +52,9 @@ class Pairs:
             for i in lowest:
                 another = self.pop_from_deck(1)
                 self.dbg("Player " + str(i) + " is dealt " + str(another[0]))
+                inLoopAlready = False
                 while another[0] in self.players[i].hand:
+                    inLoopAlready = True
                     self.dbg("This is a duplicate! Discarded.")
                     self.discards.append(another[0]);
                     another = self.pop_from_deck(1)
@@ -70,12 +73,18 @@ class Pairs:
     def pop_from_deck(self, n):
         r = []
         for i in xrange(n):
-            if len(self.deck) == 0:
+            while len(self.deck) <= 5:
+                if len(self.discards) == 0:
+                    print "ERROR: discards is empty while reshuffling"
                 self.dbg("Reshuffling!")
-                self.deck = self.discards
+                self.deck += self.discards
+                self.discards = []
                 random.shuffle(self.deck)
-                self.discards = self.pop_from_deck(5)
+                self.deckCount = [0]*10
+                for c in self.deck:
+                    self.deckCount[c-1] += 1
             r.append(self.deck.pop())
+            self.deckCount[r[-1]-1] -= 1
         return r
     
     def play(self, clses, dbg=True):
@@ -84,7 +93,7 @@ class Pairs:
         limit = (60 / len(clses)) + 1
         while True:
             p = self.players[pid]
-            mv = p.move(self.players)
+            mv = p.decide(self.players, self.deckCount)
             self.dbg("")
             if mv:
                 # hit
@@ -128,3 +137,4 @@ class Pairs:
         for i in xrange(len(self.players)):
             p = self.players[i]
             self.dbg("Player " + str(i) + " score: " + str(p.score) + " and scored: " + str(p.scored))
+        return pid

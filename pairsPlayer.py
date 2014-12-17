@@ -6,10 +6,6 @@ class PairsPlayer:
         self.score = 0
         self.scored = []
 
-    def move(self, players):
-        decision = self.decide(players)
-        return decision
-
     def insert_into_hand(self, cards):
         new_cards = [x for x in cards]
         new_hand = []
@@ -41,7 +37,7 @@ class PairsPlayer:
         return x
 
     # Returns true if hit and false if fold
-    def decide(self, players):
+    def decide(self, players, deck):
         # OVERRIDE THIS IF YOU DEFINE A NEW PLAYER
         print
         print "Player " + str(self.pid) + "'s hand is " + str(self.hand)

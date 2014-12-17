@@ -2,7 +2,7 @@ import random
 from pairsPlayer import PairsPlayer
 
 class RandomPlayer(PairsPlayer):
-    def decide(self, players):
+    def decide(self, players, deck):
         return random.random() < 0.5
 
     def handle_fold(self, lowest, players):
